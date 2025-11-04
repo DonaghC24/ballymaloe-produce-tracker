@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Harvest Log</h2>
+
+    {% if harvests %}
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Crop</th>
+            <th>Quantity</th>
+            <th>Unit</th>
+            <th>Date</th>
+            <th>Entered By</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in harvests %}
+            <tr>
+              <td>{{ h.crop_name }}</td>
+              <td>{{ h.quantity }}</td>
+              <td>{{ h.unit }}</td>
+              <td>{{ h.harvested_on or "—" }}</td>
+              <td>{{ h.entered_by }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No harvests logged yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

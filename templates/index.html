@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ballymaloe Produce Tracker</title>
+</head>
+<body>
+    <h1>Garden Produce</h1>
+    <ul>
+        {% for item in produce %}
+            <li>{{ item.name }} – {{ item.quantity }} kg – {{ item.status }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
