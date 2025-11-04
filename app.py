@@ -27,7 +27,7 @@ load_dotenv()              # loads environment variables from .env file into the
 
 def create_app():
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-me")   #sets the secret key for session security, loads from environment
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "your-flask-secret-key")   #sets the secret key for session security, loads from environment
 
 
 # https://flask-login.readthedocs.io/en/latest/
@@ -189,6 +189,7 @@ def create_app():
         response = supabase.table("users").select("*").eq("id", user_id).single().execute()
         user_data = response.data         # fetches the user record to be deleted
 
+        # prevent unsafe or invalid user deletion:
         if not user_data:
             flash("User not found.", "danger")
             return redirect(url_for("admin_users"))
