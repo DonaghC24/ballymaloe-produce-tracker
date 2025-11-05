@@ -9,3 +9,7 @@ key = os.getenv("SUPABASE_KEY")           # retrieves the supabase API key from 
 
 # initializes the Supabase client for database operations
 supabase = create_client(url, key)
+
+
+
+# https://supabase.com/docs/reference/python/introduction

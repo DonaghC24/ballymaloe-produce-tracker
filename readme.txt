@@ -1,4 +1,8 @@
 https://supabase.com/docs/guides/database/connecting-to-postgres#connection-pooler
+https://supabase.com/docs/reference/python/introduction
+
+
+
 
 # Ballymaloe Produce Tracker 
 

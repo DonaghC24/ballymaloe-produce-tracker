@@ -13,9 +13,9 @@ class User(UserMixin):
 
     @staticmethod
     def from_supabase(data):
-        created_at = data["created_at"]         # Extracts the 'created_at' field from the Supabase record
+        created_at = data["created_at"]         # extracts the 'created_at' field from the Supabase record
         if isinstance(created_at, str):
-            created_at = parse(created_at)      # Converts string timestamp to a datetime object using dateutil.parser
+            created_at = parse(created_at)      # converts string timestamp to a datetime object using dateutil.parser
 
         return User(
             id=data["id"],

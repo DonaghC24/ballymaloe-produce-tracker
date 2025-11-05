@@ -35,8 +35,7 @@ def create_app():
     login_manager.init_app(app)              # links login manager to the Flask app
     login_manager.login_view = "login"       # redirects unauthenticated users to the login page
 
-
-
+    # https://supabase.com/docs/reference/python/introduction
     @login_manager.user_loader
     def load_user(user_id):               # fetches a single user record from the supabase 'users' table where id matches user_id
         response = supabase.table("users").select("*").eq("id", user_id).single().execute()
@@ -44,7 +43,7 @@ def create_app():
             return User.from_supabase(response.data)        # converts the supabase user data into a flask-login User object
         return None
 
-    # most route logic was adapted from my last few years projects, with some custom changes noted in comments where relevant.
+    # majority of route work is my own (past projects etc.), with some custom changes noted in comments where relevant.
     @app.route("/")
     def index():
         if current_user.is_authenticated:
@@ -58,7 +57,7 @@ def create_app():
     def profile():
         return render_template("profile.html")
 
-    # --- Auth ---   https://dev.to/nagatodev/adding-authentication-to-a-flask-application-53ep
+    # -- auth ---   https://dev.to/nagatodev/adding-authentication-to-a-flask-application-53ep
     @app.route("/register", methods=["GET", "POST"])
     def register():
         if request.method == "POST":
