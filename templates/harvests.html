@@ -22,7 +22,7 @@
               <td>{{ h.quantity }}</td>
               <td>{{ h.unit }}</td>
               <td>{{ h.harvested_on or "—" }}</td>
-              <td>{{ h.entered_by }}</td>
+              <td>{{ h.users.email }}</td>
             </tr>
           {% endfor %}
         </tbody>

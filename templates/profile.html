@@ -10,7 +10,7 @@
     </div>
     <div class="card-body">
       <p><strong>Role:</strong> {{ 'Admin' if current_user.is_admin else 'User' }}</p>
-      <p>This is your personal dashboard. From here, you can log harvests, view your data, and manage your account.</p>
+      <p>This is your personal dashboard. From here, you can log harvests and manage your account.</p>
 
       <hr>
       <a href="{{ url_for('new_harvest') }}" class="btn btn-success">Log a Harvest</a>

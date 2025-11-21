@@ -57,7 +57,7 @@ def create_app():
     def profile():
         return render_template("profile.html")
 
-    # -- auth ---   https://dev.to/nagatodev/adding-authentication-to-a-flask-application-53ep
+    # -- authorisation
     @app.route("/register", methods=["GET", "POST"])
     def register():
         if request.method == "POST":
@@ -123,7 +123,7 @@ def create_app():
         flash("Logged out.", "info")
         return redirect(url_for("login"))
 
-    # ---admin-only user management ---
+    # ---admin-only user management
     def require_admin():
         if not current_user.is_authenticated or not current_user.is_admin:
             flash("Admin access required.", "danger")
@@ -139,6 +139,47 @@ def create_app():
         response = supabase.table("users").select("*").order("created_at", desc=True).execute()
         users = [User.from_supabase(u) for u in response.data] # converts each user record into a User object
         return render_template("admin_users.html", users=users)  # renders the admin user management page with the list of users
+
+    @app.route("/admin/users/<int:user_id>/delete", methods=["POST"])
+    @login_required
+    def delete_user(user_id):
+        if not require_admin():
+            return redirect(url_for("index"))   # redirects if user is not an admin
+
+        response = supabase.table("users").select("*").eq("id", user_id).single().execute()
+        user_data = response.data         # fetches the user record to be deleted
+
+        # prevent unsafe or invalid user deletion:
+        if not user_data:
+            flash("User not found.", "danger")
+            return redirect(url_for("admin_users"))
+
+        if user_data["id"] == current_user.id:
+            flash("You cannot delete yourself.", "warning")
+            return redirect(url_for("admin_users"))
+        if user_data["is_admin"]:
+            flash("Cannot delete the admin account.", "warning")
+            return redirect(url_for("admin_users"))
+
+        # deletes the user from the database
+        supabase.table("users").delete().eq("id", user_id).execute()
+        # confirms deletion and reloads the admin user lis
+        flash(f"Deleted user {user_data['email']}.", "success")
+        return redirect(url_for("admin_users"))
+
+
+    @app.route("/harvests")
+    @login_required
+    def view_harvests():
+        # Fetch all harvest records, ordered by harvest date (newest first)
+        harvest_response = supabase.table("harvests").select("*, users(email)").order("harvested_on",desc=True).execute()
+        harvests = harvest_response.data if harvest_response.data else []
+
+        # Fetch all produce types for filtering or display
+        produce_response = supabase.table("produce_types").select("*").execute()
+        produce_types = produce_response.data if produce_response.data else []
+
+        return render_template("harvests.html", harvests=harvests, produce_types=produce_types)
 
     @app.route("/harvests/new", methods=["GET", "POST"])
     @login_required
@@ -170,54 +211,71 @@ def create_app():
             }
 
             if harvested_on:
-                harvest_data["harvested_on"] = harvested_on  # YYYY-MM-DD
+                harvest_data["harvested_on"] = harvested_on
 
             # inserts the harvest record into the database
             supabase.table("harvests").insert(harvest_data).execute()
             flash("Harvest logged successfully.", "success")
             return redirect(url_for("new_harvest"))
 
-        return render_template("new_harvest.html")
-
-    @app.route("/admin/users/<int:user_id>/delete", methods=["POST"])
-    @login_required
-    def delete_user(user_id):
-        if not require_admin():
-            return redirect(url_for("index"))   # redirects if user is not an admin
-
-        response = supabase.table("users").select("*").eq("id", user_id).single().execute()
-        user_data = response.data         # fetches the user record to be deleted
-
-        # prevent unsafe or invalid user deletion:
-        if not user_data:
-            flash("User not found.", "danger")
-            return redirect(url_for("admin_users"))
-
-        if user_data["id"] == current_user.id:
-            flash("You cannot delete yourself.", "warning")
-            return redirect(url_for("admin_users"))
-        if user_data["is_admin"]:
-            flash("Cannot delete the admin account.", "warning")
-            return redirect(url_for("admin_users"))
-
-        # deletes the user from the database
-        supabase.table("users").delete().eq("id", user_id).execute()
-        # confirms deletion and reloads the admin user lis
-        flash(f"Deleted user {user_data['email']}.", "success")
-        return redirect(url_for("admin_users"))
-
-    @app.route("/harvests")
-    @login_required
-    def view_harvests():
-        # Fetch all harvest records, ordered by harvest date (newest first)
-        harvest_response = supabase.table("harvests").select("*").order("harvested_on", desc=True).execute()
-        harvests = harvest_response.data if harvest_response.data else []
-
-        # Fetch all produce types for filtering or display
-        produce_response = supabase.table("produce_types").select("*").execute()
+        # this asks Supabase for all rows in the 'produce_types' table, but only selects the name and category columns.
+        # reference for block of code:  https://supabase.com/docs/reference/python/select
+        produce_response = supabase.table("produce_types").select("name", "category").execute()
         produce_types = produce_response.data if produce_response.data else []
 
-        return render_template("harvests.html", harvests=harvests, produce_types=produce_types)
+        return render_template("new_harvest.html", produce_types=produce_types)
+
+    @app.route("/orders/new", methods=["GET", "POST"])
+    @login_required
+    def new_order():
+        if request.method == "POST":
+            # get form inputs from the submitted order form -
+            produce_name = request.form.get("produce_name", "").strip()
+            quantity = request.form.get("quantity", "").strip()
+            unit = request.form.get("unit", "").strip()
+            ordered_on = request.form.get("ordered_on", "").strip()
+            notes = request.form.get("notes", "").strip()
+            # validate required fields
+            if not produce_name or not quantity or not unit:
+                flash("Produce, quantity, and unit are required.", "danger")
+                return redirect(url_for("new_order"))
+            # ensure quantity is numeric
+            try:
+                quantity = float(quantity)
+            except ValueError:
+                flash("Quantity must be a number.", "danger")
+                return redirect(url_for("new_order"))
+
+            order_data = {
+                "produce_name": produce_name,
+                "quantity": quantity,
+                "unit": unit,
+                "ordered_by": current_user.id
+            }
+
+            if ordered_on:
+                order_data["ordered_on"] = ordered_on
+            if notes:
+                order_data["notes"] = notes
+            # insert new order into 'orders' table
+            supabase.table("orders").insert(order_data).execute()
+            flash("Order placed successfully.", "success")
+            return redirect(url_for("view_orders"))
+
+        # Fetch produce types for dropdown
+        produce_response = supabase.table("produce_types").select("name", "category").execute()
+        produce_types = produce_response.data if produce_response.data else []
+        return render_template("new_order.html", produce_types=produce_types)
+
+
+
+    # iteration 2 new orders route
+    @app.route("/orders")
+    @login_required
+    def view_orders():
+        order_response = supabase.table("orders").select("*, users(email)").order("ordered_on", desc=True).execute()
+        orders = order_response.data if order_response.data else []
+        return render_template("orders.html", orders=orders)
 
     return app
 

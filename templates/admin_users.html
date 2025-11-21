@@ -21,7 +21,7 @@
       <td>{{ u.id }}</td>
       <td>{{ u.email }}</td>
       <td>{{ 'Yes' if u.is_admin else 'No' }}</td>
-      <td>{{ u.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+      <td>{{ u.created_at.strftime('%d.%m.%Y %H:%M') }}</td>  <!-- https://stackoverflow.com/questions/60886978/python-how-to-customize-datetime-format-using-strftime -->
       <td>
         {% if not u.is_admin %}
           <form method="POST" action="{{ url_for('delete_user', user_id=u.id) }}" onsubmit="return confirm('Delete {{ u.email }}?');">

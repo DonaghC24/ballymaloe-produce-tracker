@@ -16,23 +16,75 @@
     {% endwith %}
 
     <form method="POST" action="{{ url_for('new_harvest') }}">
+        <!-- category filter dropdown -->
+        <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <select class="form-select" id="category" onchange="filterProduce()" required>
+                <option value="">Select category</option>
+                <option value="Fruit">Fruit</option>
+                <option value="Vegetable">Vegetable</option>
+                <option value="Herb">Herb</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <!-- crop dropdown filtered by category -->
         <div class="mb-3">
             <label for="crop_name" class="form-label">Crop Name</label>
-            <input type="text" class="form-control" id="crop_name" name="crop_name" required>
+            <select class="form-select" id="crop_name" name="crop_name" required>
+                <option value="">Select a crop</option>
+                {% for produce in produce_types %}
+                    <option value="{{ produce.name }}" data-category="{{ produce.category }}">
+                        {{ produce.name }}
+                    </option>
+                {% endfor %}
+            </select>
         </div>
+
         <div class="mb-3">
             <label for="quantity" class="form-label">Quantity</label>
             <input type="text" class="form-control" id="quantity" name="quantity" required>
         </div>
+
+        <!-- fixed unit dropdown -->
         <div class="mb-3">
             <label for="unit" class="form-label">Unit</label>
-            <input type="text" class="form-control" id="unit" name="unit" placeholder="e.g. kg, bunches" required>
+            <select class="form-select" id="unit" name="unit" required>
+                <option value="">Select unit</option>
+                <option value="bunch">Bunch</option>
+                <option value="chip">Chip</option>
+                <option value="tray">Tray</option>
+            </select>
         </div>
+
         <div class="mb-3">
             <label for="harvested_on" class="form-label">Date (optional)</label>
             <input type="date" class="form-control" id="harvested_on" name="harvested_on">
         </div>
+
         <button type="submit" class="btn btn-success">Log Harvest</button>
     </form>
 </div>
+
+<!-- JavaScript: only filtering by category now
+reference: https://stackoverflow.com/questions/73696892/javascript-using-onchange-to-filter-data-using-a-drop-down-menu -->
+<script>
+    function filterProduce() {
+        const category = document.getElementById("category").value;
+        const cropSelect = document.getElementById("crop_name");
+
+        for (let i = 0; i < cropSelect.options.length; i++) {
+            const option = cropSelect.options[i];
+            const optionCategory = option.getAttribute("data-category");
+
+            if (!category || option.value === "") {
+                option.style.display = "block";
+            } else {
+                option.style.display = optionCategory === category ? "block" : "none";
+            }
+        }
+
+        cropSelect.selectedIndex = 0; // reset crop dropdown
+    }
+</script>
 {% endblock %}
