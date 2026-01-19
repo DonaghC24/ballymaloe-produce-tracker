@@ -1,15 +1,21 @@
+<!-- admin‑only form for adding new produce types
+to the system. New entries automatically appear in the harvest and order
+     dropdowns, keeping the system to‑date with seasonal crops. -->
 {% extends "base.html" %}
 
 {% block content %}
 <div class="container mt-5">
     <h2 class="mb-4">Add New Produce Type</h2>
 
+    <!-- Text input for the produce name
+          required to ensure no empty entries are added. -->
     <form method="POST">
         <div class="mb-3">
             <label class="form-label">Produce Name</label>
             <input type="text" class="form-control" name="name" required>
         </div>
 
+        <!-- dropdown -->
         <div class="mb-3">
             <label class="form-label">Category</label>
             <select class="form-select" name="category" required>
@@ -21,6 +27,8 @@
             </select>
         </div>
 
+
+        <!-- Submit button adds the new produce type, Cancel returns the user to the homepage without saving. -->
         <button type="submit" class="btn btn-success">Add Produce</button>
         <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
     </form>
