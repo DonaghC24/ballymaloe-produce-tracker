@@ -212,7 +212,6 @@ def create_app():
 
             if harvested_on:
                 harvest_data["harvested_on"] = harvested_on
-
             # inserts the harvest record into the database
             supabase.table("harvests").insert(harvest_data).execute()
             flash("Harvest logged successfully.", "success")
@@ -276,6 +275,121 @@ def create_app():
         order_response = supabase.table("orders").select("*, users(email)").order("ordered_on", desc=True).execute()
         orders = order_response.data if order_response.data else []
         return render_template("orders.html", orders=orders)
+
+
+# ITERATION 3 AS FAR AS LINE 359
+    @app.route("/orders/<int:order_id>/delete", methods=["POST"])
+    @login_required
+    def delete_order(order_id):
+        # Fetch the order to ensure it exists
+        response = supabase.table("orders").select("*").eq("id", order_id).single().execute()
+        order = response.data
+
+        if not order:
+            flash("Order not found.", "danger")
+            return redirect(url_for("view_orders"))
+
+        # Optional: prevent users deleting orders they didn't create
+        if order["ordered_by"] != current_user.id and not current_user.is_admin:
+            flash("You do not have permission to delete this order.", "danger")
+            return redirect(url_for("view_orders"))
+
+        # Delete the order
+        supabase.table("orders").delete().eq("id", order_id).execute()
+
+        flash("Order cancelled.", "success")
+        return redirect(url_for("view_orders"))
+
+    @app.route("/orders/<int:order_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def edit_order(order_id):
+        # Fetch the order
+        response = supabase.table("orders").select("*").eq("id", order_id).single().execute()
+        order = response.data
+
+        if not order:
+            flash("Order not found.", "danger")
+            return redirect(url_for("view_orders"))
+
+        # Permission check
+        if order["ordered_by"] != current_user.id and not current_user.is_admin:
+            flash("You do not have permission to edit this order.", "danger")
+            return redirect(url_for("view_orders"))
+
+        # Handle form submission
+        if request.method == "POST":
+            produce_name = request.form.get("produce_name", "").strip()
+            quantity = request.form.get("quantity", "").strip()
+            unit = request.form.get("unit", "").strip()
+            ordered_on = request.form.get("ordered_on", "").strip()
+            notes = request.form.get("notes", "").strip()
+
+            # Validation
+            if not produce_name or not quantity or not unit:
+                flash("Produce, quantity, and unit are required.", "danger")
+                return redirect(url_for("edit_order", order_id=order_id))
+
+            try:
+                quantity = float(quantity)
+            except ValueError:
+                flash("Quantity must be a number.", "danger")
+                return redirect(url_for("edit_order", order_id=order_id))
+
+            update_data = {
+                "produce_name": produce_name,
+                "quantity": quantity,
+                "unit": unit,
+                "notes": notes
+            }
+
+            if ordered_on:
+                update_data["ordered_on"] = ordered_on
+
+            # Update in Supabase
+            supabase.table("orders").update(update_data).eq("id", order_id).execute()
+
+            flash("Order updated successfully.", "success")
+            return redirect(url_for("view_orders"))
+
+        # GET request → show form
+        produce_response = supabase.table("produce_types").select("name", "category").execute()
+        produce_types = produce_response.data if produce_response.data else []
+
+        return render_template("edit_order.html", order=order, produce_types=produce_types)
+
+    @app.route("/produce/new", methods=["GET", "POST"])
+    @login_required
+    def new_produce():
+        # Admin-only access
+        if not current_user.is_admin:
+            flash("Admin access required.", "danger")
+            return redirect(url_for("index"))
+
+        if request.method == "POST":
+            name = request.form.get("name", "").strip()
+            category = request.form.get("category", "").strip()
+
+            # Validation
+            if not name or not category:
+                flash("Name and category are required.", "danger")
+                return redirect(url_for("new_produce"))
+
+            # Check for duplicates
+            existing = supabase.table("produce_types").select("id").eq("name", name).execute()
+            if existing.data:
+                flash("This produce type already exists.", "warning")
+                return redirect(url_for("new_produce"))
+
+            # Insert into database
+            supabase.table("produce_types").insert({
+                "name": name,
+                "category": category
+            }).execute()
+
+            flash("New produce type added.", "success")
+            return redirect(url_for("new_produce"))
+
+        return render_template("new_produce.html")
 
     return app
 

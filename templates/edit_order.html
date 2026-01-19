@@ -1,0 +1,49 @@
+<!-- ITERATION 3 -->
+
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Edit Order</h2>
+
+    <form method="POST">
+        <div class="mb-3">
+            <label class="form-label">Produce</label>
+            <select class="form-select" name="produce_name" required>
+                {% for produce in produce_types %}
+                    <option value="{{ produce.name }}"
+                        {% if produce.name == order.produce_name %}selected{% endif %}>
+                        {{ produce.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Quantity</label>
+            <input type="text" class="form-control" name="quantity" value="{{ order.quantity }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Unit</label>
+            <select class="form-select" name="unit" required>
+                <option value="bunch" {% if order.unit == "bunch" %}selected{% endif %}>Bunch</option>
+                <option value="chip" {% if order.unit == "chip" %}selected{% endif %}>Chip</option>
+                <option value="tray" {% if order.unit == "tray" %}selected{% endif %}>Tray</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-control" name="ordered_on" value="{{ order.ordered_on }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" name="notes">{{ order.notes }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">Save Changes</button>
+        <a href="{{ url_for('view_orders') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}
