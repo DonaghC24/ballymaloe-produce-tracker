@@ -5,7 +5,9 @@ allows a user (or admin) to update an existing order.-->
 {% block content %}
 <div class="container mt-5">
     <h2>Edit Order</h2>
-
+<!--Reference:
+Bootstrap 5 Forms
+https://getbootstrap.com/docs/5.3/forms/overview/-->
     <form method="POST">
         <div class="mb-3">
             <label class="form-label">Produce</label>
@@ -43,6 +45,7 @@ allows a user (or admin) to update an existing order.-->
             <textarea class="form-control" name="notes">{{ order.notes }}</textarea>
         </div>
 
+    <!--Reference: Flask Documentation — URL Building https://flask.palletsprojects.com/en/3.0.x/quickstart/#url-building-->
         <button type="submit" class="btn btn-success">Save Changes</button>
         <a href="{{ url_for('view_orders') }}" class="btn btn-secondary">Cancel</a>
     </form>

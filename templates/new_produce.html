@@ -14,7 +14,9 @@ to the system. New entries automatically appear in the harvest and order
             <label class="form-label">Produce Name</label>
             <input type="text" class="form-control" name="name" required>
         </div>
-
+<!--Reference:
+Bootstrap 5 Forms
+https://getbootstrap.com/docs/5.3/forms/overview/-->
         <!-- dropdown -->
         <div class="mb-3">
             <label class="form-label">Category</label>
@@ -27,7 +29,9 @@ to the system. New entries automatically appear in the harvest and order
             </select>
         </div>
 
-
+<!--Reference:
+Flask Documentation — URL Building
+https://flask.palletsprojects.com/en/3.0.x/quickstart/#url-building -->
         <!-- Submit button adds the new produce type, Cancel returns the user to the homepage without saving. -->
         <button type="submit" class="btn btn-success">Add Produce</button>
         <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
