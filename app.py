@@ -1,4 +1,5 @@
 # https://flask.palletsprojects.com
+# PRIMARY SOURCE FOR ROUTING, RENDERING TEMPLATES, HANDLING FORMS, REDIRECING ETC...
 
 import os  # environment variables
 # Core Flask tools for app setup, templates, forms, redirects, and messages
@@ -7,7 +8,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 # Flask-Login tools for user sessions and route protection
 from flask_login import (
     LoginManager, login_user, logout_user,
-    current_user, login_required
+    current_user, login_required 
 )
 
 # to securely hash passwords and verify them during login - https://werkzeug.palletsprojects.com
@@ -171,7 +172,7 @@ def create_app():
     @app.route("/harvests")
     @login_required
     def view_harvests():
-        # Fetch all harvest records, ordered by harvest date (newest first)
+        # Fetch all harvest records, ordered by harvest date
         harvest_response = supabase.table("harvests").select("*, users(email)").order("harvested_on",desc=True).execute()
         harvests = harvest_response.data if harvest_response.data else []
 
@@ -276,11 +277,32 @@ def create_app():
         orders = order_response.data if order_response.data else []
         return render_template("orders.html", orders=orders)
 
+
+
+
+
+
+
+
+
 #------------------------------------------------
 # ITERATION 3 AS FAR AS LINE 392
+    # Reference:
+    # Flask Quickstart — Routing, Redirects, Flashing
+    # https://flask.palletsprojects.com/en/3.0.x/quickstart/
     @app.route("/orders/<int:order_id>/delete", methods=["POST"])
+
+    #Reference:
+    #Flask‑Login — Protecting
+    #Views & current_user
+    #https://flask-login.readthedocs.io/en/latest/
     @login_required
     def delete_order(order_id):
+        #Reference:
+        #Supabase
+        #Python
+        #Client — Select & Delete
+        #https://supabase.com/docs/reference/python/select
         # fetching order to ensure it exists
         response = supabase.table("orders").select("*").eq("id", order_id).single().execute()
         order = response.data
@@ -300,9 +322,28 @@ def create_app():
         flash("Order cancelled.", "success")
         return redirect(url_for("view_orders"))
 
+
+    #Reference:
+    #Flask
+    #https: // flask.palletsprojects.com / en / 3.0.x / quickstart /
+    # Covers:
+    # request.method == "POST", request.form.get(), flash(), redirect(), url_for(), render_template()
+
+
+
+    #Reference:
+    #Flask‑Login
+    #Views & current_user
+    #https: // flask - login.readthedocs.io / en / latest /
+    # Covers: current_user.id, current_user.is_admin
     @app.route("/orders/<int:order_id>/edit", methods=["GET", "POST"])
     @login_required
     def edit_order(order_id):
+
+        #Covers: .table("orders"), .select("*"), .eq("id", order_id), .single(), .update(update_data), .execute()
+        # Fetching produce types
+        #Reference:
+        #https: // supabase.com / docs / reference / python / select
         # fetch the order
         response = supabase.table("orders").select("*").eq("id", order_id).single().execute()
         order = response.data
@@ -317,6 +358,7 @@ def create_app():
             return redirect(url_for("view_orders"))
 
         # -----------------------------   Handle form submission (POST) -----------------------------
+        # .strip(): Return a copy of the string with leading and trailing whitespace removed.
         if request.method == "POST":
             produce_name = request.form.get("produce_name", "").strip()
             quantity = request.form.get("quantity", "").strip()
@@ -360,7 +402,17 @@ def create_app():
 
         return render_template("edit_order.html", order=order, produce_types=produce_types)
 
+
+
+
+    # Reference:
+    # Flask Quickstart — Routing, Request Data, Redirects, Flashing, Templates
+    # https://flask.palletsprojects.com/en/3.0.x/quickstart/
+# Covers: @app.route(..., methods=["GET", "POST"]), request.method == "POST", request.form.get(), flash(), redirect(), url_for(), render_template()
     @app.route("/produce/new", methods=["GET", "POST"])
+#Reference:
+# Flask‑Login — Protecting Views & current_user
+# https://flask-login.readthedocs.io/en/latest/
     @login_required
     def new_produce():
         # admin-only access
@@ -377,7 +429,11 @@ def create_app():
                 flash("Name and category are required.", "danger")
                 return redirect(url_for("new_produce"))
 
-            # Check for duplicates
+
+#Reference:
+#Supabase Python Client — Select
+#https://supabase.com/docs/reference/python/select
+            # check for duplicates
             existing = supabase.table("produce_types").select("id").eq("name", name).execute()
             if existing.data:
                 flash("This produce type already exists.", "warning")
