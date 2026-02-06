@@ -168,17 +168,25 @@ def create_app():
         flash(f"Deleted user {user_data['email']}.", "success")
         return redirect(url_for("admin_users"))
 
-
     @app.route("/harvests")
     @login_required
     def view_harvests():
-        # Fetch all harvest records, ordered by harvest date
-        harvest_response = supabase.table("harvests").select("*, users(email)").order("harvested_on",desc=True).execute()
+        # Fetch harvests with user info
+        harvest_response = supabase.table("harvests").select("*, users(email)").order("harvested_on",
+                                                                                      desc=True).execute()
         harvests = harvest_response.data if harvest_response.data else []
 
-        # Fetch all produce types for filtering or display
+        # Fetch produce types for category mapping
         produce_response = supabase.table("produce_types").select("*").execute()
         produce_types = produce_response.data if produce_response.data else []
+
+        # ITERATION 4: Add category to each harvest for filtering
+        #Python Official Documentation — Dictionary Comprehensions
+        # https://docs.python.org/3/tutorial/datastructures.html#dictionaries
+        category_map = {p["name"]: p["category"] for p in produce_types}
+        for harvest in harvests:
+            crop_name = harvest.get("crop_name", "")
+            harvest["category"] = category_map.get(crop_name, "Unknown")
 
         return render_template("harvests.html", harvests=harvests, produce_types=produce_types)
 
@@ -267,26 +275,33 @@ def create_app():
         produce_types = produce_response.data if produce_response.data else []
         return render_template("new_order.html", produce_types=produce_types)
 
-
-
-    # iteration 2 new orders route
     @app.route("/orders")
     @login_required
     def view_orders():
+        # Fetch orders with user info
         order_response = supabase.table("orders").select("*, users(email)").order("ordered_on", desc=True).execute()
         orders = order_response.data if order_response.data else []
+
+        # Fetch produce types for category mapping
+        produce_response = supabase.table("produce_types").select("*").execute()
+        produce_types = produce_response.data if produce_response.data else []
+
+        # ITERATION 4: Add category to each order for filtering
+        #Python Official Documentation — Dictionary
+        #https://docs.python.org/3/tutorial/datastructures.html#dictionaries
+        category_map = {p["name"]: p["category"] for p in produce_types}
+        for order in orders:
+            produce_name = order.get("produce_name", "")
+            order["category"] = category_map.get(produce_name, "Unknown")
+
         return render_template("orders.html", orders=orders)
 
 
 
 
 
-
-
-
-
 #------------------------------------------------
-# ITERATION 3 AS FAR AS LINE 392
+# ITERATION 3
     # Reference:
     # Flask Quickstart — Routing, Redirects, Flashing
     # https://flask.palletsprojects.com/en/3.0.x/quickstart/

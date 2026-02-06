@@ -4,46 +4,123 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Ballymaloe K-G Tracker{% endblock %}</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+
+    <!-- theme stylesheet -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+
     <style>
       body { padding-top: 70px; }
       footer { margin-top: 4rem; padding: 1rem 0; background: #f8f9fa; text-align: center; }
     </style>
   </head>
-  <body>
 
-    <!-- navbar -->
+  <!-- default theme light -->
+  <body id="theme-body" class="light">
+
+        <!-- navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top">
       <div class="container">
-        <a class="navbar-brand" href="{{ url_for('index') }}"> Ballymaloe K-G Tracker</a>
+
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+          Ballymaloe K-G Tracker
+        </a>
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
+
+            <!-- Theme toggle button -->
+            <li class="nav-item me-3">
+              <button id="theme-toggle" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-sun"></i> Light Mode
+              </button>
+            </li>
+
+          <!--URL Building from https://flask.palletsprojects.com/
+          Bootstrap Icons documentation https://icons.getbootstrap.com/
+          Bootstrap Navbar Structure https://getbootstrap.com/docs/5.3/components/navbar/-->
             {% if current_user.is_authenticated %}
-              <li class="nav-item"><a class="nav-link" href="{{ url_for('new_harvest') }}">Log Harvest</a></li>
-              <li class="nav-item"><a class="nav-link" href="{{ url_for('view_harvests') }}">View Harvests</a></li>
-              <li class="nav-item"><a class="nav-link" href="{{ url_for('new_order') }}">Place Order</a></li>
-              <li class="nav-item"><a class="nav-link" href="{{ url_for('view_orders') }}">View Orders</a></li>
-                <!-- ITERATION 3 NAVBAR AS FAR AS LINE 37 added 'add produce' button-->
+
+              <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'new_harvest' %}active{% endif %}"
+                   href="{{ url_for('new_harvest') }}">
+                  <i class="bi bi-plus-circle"></i> Log Harvest
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'view_harvests' %}active{% endif %}"
+                   href="{{ url_for('view_harvests') }}">
+                  <i class="bi bi-list-ul"></i> View Harvests
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'new_order' %}active{% endif %}"
+                   href="{{ url_for('new_order') }}">
+                  <i class="bi bi-cart-plus"></i> Place Order
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'view_orders' %}active{% endif %}"
+                   href="{{ url_for('view_orders') }}">
+                  <i class="bi bi-receipt"></i> View Orders
+                </a>
+              </li>
+
               {% if current_user.is_admin %}
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('new_produce') }}">Add Produce</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('admin_users') }}">Admin</a>
-                  </li>
-                {% endif %}
-              <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+                <li class="nav-item">
+                  <a class="nav-link {% if request.endpoint == 'new_produce' %}active{% endif %}"
+                     href="{{ url_for('new_produce') }}">
+                    <i class="bi bi-plus-square"></i> Add Produce
+                  </a>
+                </li>
+
+                <li class="nav-item">
+                  <a class="nav-link {% if request.endpoint == 'admin_users' %}active{% endif %}"
+                     href="{{ url_for('admin_users') }}">
+                    <i class="bi bi-people"></i> Admin
+                  </a>
+                </li>
+              {% endif %}
+
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('logout') }}">
+                  <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+              </li>
+
             {% else %}
-              <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
-              <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
+
+              <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'login' %}active{% endif %}"
+                   href="{{ url_for('login') }}">
+                  <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'register' %}active{% endif %}"
+                   href="{{ url_for('register') }}">
+                  <i class="bi bi-person-plus"></i> Register
+                </a>
+              </li>
+
             {% endif %}
           </ul>
         </div>
       </div>
     </nav>
+
+
 
     <!-- flash messages -->
     <div class="container mt-3">
@@ -64,11 +141,56 @@
       {% block content %}{% endblock %}
     </div>
 
-     <!-- footer -->
+    <!-- footer -->
     <footer>
       &copy; Ballymaloe K-G Tracker
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+
+    <!-- Theme toggle script -->
+    <!-- toggling a class on <body> + using localStorage to save theme preference.
+    YouTube: Web Dev Simplified — “Build A Dark Mode Toggle With JavaScript”
+    https://www.youtube.com/watch?v=wodWDIdV9BY     3:40 mins
+    the theme is switched by toggling a class on the <body> element and the user’s preference is stored using
+    localStorage so it persists across page reloads.
+
+
+classList manipulation (add, remove, replace) https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
+This is the official reference for adding, removing, and replacing CSS classes.
+-->
+
+
+ <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const body = document.getElementById("theme-body");
+        const toggleBtn = document.getElementById("theme-toggle");
+
+        // load saved theme
+        const savedTheme = localStorage.getItem("theme") || "light";
+        body.classList.remove("light", "dark");
+        body.classList.add(savedTheme);
+
+        // set initial button text
+        toggleBtn.textContent = savedTheme === "light" ? "Light Mode" : "Dark Mode";
+
+        // toggle theme on click
+        toggleBtn.addEventListener("click", function () {
+            if (body.classList.contains("light")) {
+                body.classList.replace("light", "dark");
+                localStorage.setItem("theme", "dark");
+                toggleBtn.textContent = "Dark Mode";
+            } else {
+                body.classList.replace("dark", "light");
+                localStorage.setItem("theme", "light");
+                toggleBtn.textContent = "Light Mode";
+            }
+        });
+    });
+    </script>
+
   </body>
 </html>

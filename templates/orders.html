@@ -2,27 +2,29 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Harvest Log</h2>
+    <h2 class="mb-4">Daily Orders</h2>
 
-    {% if harvests %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
-      <!-- Bootstrap 5 Grid Documentation
-        https://getbootstrap.com/docs/5.3/layout/grid/
-      ITERATION 4: FILTERING CONTROLS -->
+    {% if orders %}
+
+      <!-- ITERATION 4: FILTERING CONTROLS -->
       <div class="card mb-3 bg-light">
         <div class="card-body">
-          <h6 class="card-title">Filter Harvests</h6>
+          <h6 class="card-title">Filter Orders</h6>
           <div class="row">
-            <!-- Search Box
-            Bootstrap 5 Forms Documentation
-            https://getbootstrap.com/docs/5.3/forms/overview/
-
-
-            MDN Web Docs — Global Event Handlers
-            onkeyup="filterTable()" onchange="filterTable()" onclick="clearFilters()"
-            https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers -->
+            <!-- Search Box -->
             <div class="col-md-4 mb-2">
-              <label for="searchFilter" class="form-label">Search crop</label>
+              <label for="searchFilter" class="form-label">Search produce</label>
               <input
                 type="text"
                 class="form-control form-control-sm"
@@ -64,45 +66,68 @@
         </div>
       </div>
 
-      <!-- HARVEST TABLE -->
-      <table class="table table-striped" id="harvestTable">
+      <!-- ORDERS TABLE -->
+      <table class="table table-striped" id="ordersTable">
         <thead>
           <tr>
-            <th>Crop</th>
+            <th>Produce</th>
             <th>Quantity</th>
             <th>Unit</th>
             <th>Date</th>
-            <th>Entered By</th>
+            <th>Notes</th>
+            <th>Ordered By</th>
+            <th>Edit</th>
+            <th>Delete</th>
           </tr>
         </thead>
         <tbody>
-          {% for h in harvests %}
-            <tr data-crop="{{ h.crop_name|lower }}"
-                data-category="{{ h.category if h.category else 'Unknown' }}"
-                data-date="{{ h.harvested_on if h.harvested_on else '' }}">
-              <td>{{ h.crop_name }}</td>
-              <td>{{ h.quantity }}</td>
-              <td>{{ h.unit }}</td>
-              <td>{{ h.harvested_on or "—" }}</td>
-              <td>{{ h.users.email }}</td>
+          {% for order in orders %}
+            <tr data-produce="{{ order.produce_name|lower }}"
+                data-category="{{ order.category if order.category else 'Unknown' }}"
+                data-date="{{ order.ordered_on if order.ordered_on else '' }}">
+              <td>{{ order.produce_name }}</td>
+              <td>{{ order.quantity }}</td>
+              <td>{{ order.unit }}</td>
+              <td>{{ order.ordered_on }}</td>
+              <td>{{ order.notes or "" }}</td>
+              <td>{{ order.users.email }}</td>
+
+              <!-- ITERATION 3: edit button -->
+              <td>
+                <a href="{{ url_for('edit_order', order_id=order.id) }}"
+                   class="btn btn-sm btn-warning">
+                   Edit
+                </a>
+              </td>
+
+              <!-- ITERATION 3: delete button -->
+              <td>
+                <form method="POST"
+                      action="{{ url_for('delete_order', order_id=order.id) }}"
+                      onsubmit="return confirm('Cancel this order?');">
+                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+              </td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
 
       <p class="text-muted">
-        <small>Total: <span id="totalCount">{{ harvests|length }}</span> harvests</small>
+        <small>Total: <span id="totalCount">{{ orders|length }}</span> orders</small>
       </p>
 
     {% else %}
-      <p>No harvests logged yet.</p>
+      <p>No orders found for today.</p>
     {% endif %}
+
+    <a href="{{ url_for('new_order') }}" class="btn btn-primary mt-3">Place New Order</a>
 </div>
 
 <!-- ITERATION 4: TABLE FILTERING JAVASCRIPT
 standard DOM API usage, string comparison, attribute access, and table manipulation
 MDN Web Docs — Document.getElementById()
-https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById-->
+https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById-->-->
 <script>
     function filterTable() {
         const searchValue = document.getElementById("searchFilter").value.toLowerCase();
@@ -110,28 +135,25 @@ https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById-->
         const dateFrom = document.getElementById("dateFrom").value;
         const dateTo = document.getElementById("dateTo").value;
 
-        const table = document.getElementById("harvestTable");
+        const table = document.getElementById("ordersTable");
         const rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
         const filterStatus = document.getElementById("filterStatus");
 
-
-        <!--Reading custom attributes
-        /developer.mozilla.org/en-US/docs/Web/API/Element/getAttribute -->
         let visibleCount = 0;
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
-            const cropName = row.getAttribute("data-crop");
+            const produceName = row.getAttribute("data-produce");
             const category = row.getAttribute("data-category");
             const date = row.getAttribute("data-date");
 
-            // check search filter
-            const matchesSearch = !searchValue || cropName.includes(searchValue);
+            // Check search filter
+            const matchesSearch = !searchValue || produceName.includes(searchValue);
 
             // check category filter
             const matchesCategory = !categoryValue || category === categoryValue;
 
-            // Check date range filter
+            // check date range filter
             let matchesDateRange = true;
             if (date) {
                 if (dateFrom && date < dateFrom) matchesDateRange = false;
@@ -150,7 +172,7 @@ https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById-->
         // update status
         const totalCount = rows.length;
         if (searchValue || categoryValue || dateFrom || dateTo) {
-            filterStatus.textContent = `Showing ${visibleCount} of ${totalCount} harvests`;
+            filterStatus.textContent = `Showing ${visibleCount} of ${totalCount} orders`;
         } else {
             filterStatus.textContent = "";
         }

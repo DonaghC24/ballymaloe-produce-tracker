@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Log Harvest{% endblock %}
+{% block title %}Place Order{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -9,9 +9,9 @@
       <div class="card shadow-sm border-0">
         <div class="card-body py-4">
 
-          <h3 class="fw-semibold mb-4">Log Daily Harvest</h3>
+          <h3 class="fw-semibold mb-4">Place Daily Order</h3>
 
-          <form method="POST" action="{{ url_for('new_harvest') }}">
+          <form method="POST" action="{{ url_for('new_order') }}">
 
             <div class="mb-3">
               <label class="form-label">Category</label>
@@ -25,9 +25,9 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Crop Name</label>
-              <select class="form-select" id="produce_name" name="crop_name" required>
-                <option value="">Select a crop</option>
+              <label class="form-label">Produce</label>
+              <select class="form-select" id="produce_name" name="produce_name" required>
+                <option value="">Select produce</option>
                 {% for produce in produce_types %}
                   <option value="{{ produce.name }}" data-category="{{ produce.category }}">
                     {{ produce.name }}
@@ -52,20 +52,26 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Date (optional)</label>
-              <input type="date" class="form-control" name="harvested_on">
+              <label class="form-label">Date (defaults to today)</label>
+              <input type="date" class="form-control" name="ordered_on">
             </div>
 
-            <button type="submit" class="btn btn-success px-4">Log Harvest</button>
+            <div class="mb-3">
+              <label class="form-label">Notes (optional)</label>
+              <textarea class="form-control" name="notes" rows="2"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary px-4">Place Order</button>
 
           </form>
 
         </div>
       </div>
+
     <!-- ITERATION 4: COMBINED SEARCH + CATEGORY FILTERING
      Updated from iteration 2 category-only filtering
-     reference: https://stackoverflow.com/questions/73696892/javascript-using-onchange-to-filter-data-using-a-drop-down-menu -->
-    <script>
+     Reference: https://stackoverflow.com/questions/73696892/javascript-using-onchange-to-filter-data-using-a-drop-down-menu -->
+            <script>
         function filterProduce() {
             const category = document.getElementById("category").value;
             const produceSelect = document.getElementById("produce_name");
@@ -83,7 +89,8 @@
 
             produceSelect.selectedIndex = 0; // reset dropdown
         }
-    </script>
+</script>
+
 
     </div>
   </div>

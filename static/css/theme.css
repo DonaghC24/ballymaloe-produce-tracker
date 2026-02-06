@@ -1,0 +1,162 @@
+/* css code from project "flask1", year 3 calculator app
+
+   LIGHT & DARK MODE
+-------------------------------------------*/
+
+/* Light mode (default) */
+body.light {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+/* Dark mode */
+body.dark {
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
+}
+
+/* Navbar */
+body.dark .navbar {
+    background-color: #1f1f1f !important;
+}
+
+/* Links in navbar */
+body.dark .navbar .nav-link,
+body.dark .navbar .navbar-brand {
+    color: #e0e0e0 !important;
+}
+
+/* Cards, forms, inputs */
+body.dark .card,
+body.dark .form-control,
+body.dark .form-select,
+body.dark textarea {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+    border-color: #444 !important;
+}
+
+/* Alerts */
+body.dark .alert {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+    border-color: #444 !important;
+}
+
+/* Footer */
+body.dark footer {
+    background-color: #1f1f1f !important;
+    color: #e0e0e0 !important;
+}
+
+
+
+/* ------------------------------------------
+   HOVER EFFECTS + SUBTLE ANIMATIONS
+-------------------------------------------*/
+
+/* Smooth transitions for everything */
+* {
+    transition: all 0.15s ease-in-out;
+}
+
+/* Navbar links */
+.navbar .nav-link:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+/* Buttons */
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* Cards */
+.card {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+/* Table row hover */
+table.table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    cursor: pointer;
+}
+
+/* Inputs */
+.form-control:hover,
+.form-select:hover,
+textarea:hover {
+    border-color: #198754;
+}
+
+/* Theme toggle button */
+#theme-toggle:hover {
+    transform: scale(1.05);
+}
+
+/* ------------------------------------------
+   NAVBAR POLISH (shadow + rounded corners)
+-------------------------------------------*/
+
+.navbar {
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Dark mode navbar shadow */
+body.dark .navbar {
+    box-shadow: 0 4px 12px rgba(255,255,255,0.05);
+}
+
+
+
+/* ------------------------------------------
+   ACTIVE NAV-LINK HIGHLIGHT
+-------------------------------------------*/
+
+/* Default active link */
+.navbar .nav-link.active {
+    font-weight: 600;
+    color: #ffffff !important;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+
+/* Hover effect for active link */
+.navbar .nav-link.active:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-1px);
+}
+
+/* Dark mode active link */
+body.dark .navbar .nav-link.active {
+    background: rgba(255,255,255,0.12);
+}
+
+
+
+/* ------------------------------------------
+Make hover smoother for all links
+-------------------------------------------*/
+
+.navbar .nav-link {
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+
+.navbar .nav-link:hover {
+    background: rgba(255,255,255,0.12);
+}
+
